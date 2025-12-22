@@ -38,7 +38,7 @@ BEGIN
 END;
 
 BEGIN
-   CH := 'y';
+   CH := 'y'; (* LỖI: Gán giá trị kiểu CHAR cho biến kiểu INTEGER *)
    WHILE CH = N DO
      BEGIN
        CALL INPUT;
