@@ -1,0 +1,18 @@
+PROGRAM ERROR1; (* Dựa trên EXAMPLE2 - Factorial *)
+   CONST C1 = 'a';
+         C2 = +C1;  (* LỖI: Dùng toán tử + với hằng CHAR *)
+
+VAR N : INTEGER;
+
+FUNCTION F(N : INTEGER) : INTEGER;
+  BEGIN
+    IF N = 0 THEN F := 1 ELSE F := N * F (N - 1);
+  END;
+
+BEGIN
+  FOR N := 1 TO 7 DO
+    BEGIN
+      CALL WRITELN;
+      CALL WRITEI(F(N));
+    END;
+END. (* ERROR11 *)

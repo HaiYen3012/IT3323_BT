@@ -101,15 +101,40 @@ Object* checkDeclaredLValueIdent(char* name) {
 
 
 void checkIntType(Type* type) {
-  //TODO
+  // Kiểm tra type có phải NULL không, nếu NULL hoặc không phải integer thì báo lỗi
+  if (!type) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    return;
+  }
+  
+  if (type->typeClass != TP_INT) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+  }
 }
 
 void checkCharType(Type* type) {
-  //TODO
+  // Validate type trước, sau đó kiểm tra typeClass
+  if (!type) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    return;
+  }
+  
+  if (type->typeClass != TP_CHAR) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+  }
 }
 
 void checkBasicType(Type* type) {
-  //TODO
+  // Kiểm tra type hợp lệ và phải là kiểu cơ bản (int hoặc char)
+  if (!type) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    return;
+  }
+  
+  int isBasic = (type->typeClass == TP_INT) || (type->typeClass == TP_CHAR);
+  if (!isBasic) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+  }
 }
 
 void checkArrayType(Type* type) {
@@ -119,7 +144,26 @@ void checkArrayType(Type* type) {
 }
 
 void checkTypeEquality(Type* type1, Type* type2) {
-  //TODO
+  // Validate cả 2 type
+  if (!type1 || !type2) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    return;
+  }
+  
+  // So sánh typeClass
+  if (type1->typeClass != type2->typeClass) {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    return;
+  }
+  
+  // Nếu là array, kiểm tra đệ quy
+  if (type1->typeClass == TP_ARRAY) {
+    // Kiểm tra kích thước mảng
+    if (type1->arraySize != type2->arraySize) {
+      error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+      return;
+    }
+    // Đệ quy kiểm tra kiểu phần tử
+    checkTypeEquality(type1->elementType, type2->elementType);
+  }
 }
-
-

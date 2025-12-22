@@ -1,0 +1,15 @@
+PROGRAM ERROR4; (* Dựa trên EXAMPLE5 *)
+CONST C = 1;
+TYPE T = CHAR;
+VAR X : INTEGER;
+    Y : T;
+    
+FUNCTION F(I : INTEGER):CHAR;
+CONST B = C;
+TYPE A = ARRAY(.5.) OF T;
+BEGIN
+  X := +Y;  (* LỖI: Dùng toán tử + với CHAR *)
+END;
+
+BEGIN
+END. (* ERROR44 *)

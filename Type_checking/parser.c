@@ -231,13 +231,18 @@ ConstantValue* compileConstant(void) {
   case SB_PLUS:
     eat(SB_PLUS);
     constValue = compileConstant2();
-    //TODO Check if type of the constant is integer
+    // Kiểm tra hằng sau dấu + phải là integer
+    if (constValue->type != TP_INT)
+      error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
     break;
   case SB_MINUS:
     eat(SB_MINUS);
     constValue = compileConstant2();
-    //TODO Check if type of the constant is integer
-    constValue->intValue = - constValue->intValue;
+    // Kiểm tra hằng sau dấu - phải là integer
+    if (constValue->type != TP_INT)
+      error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+    // Đảo dấu giá trị
+    constValue->intValue = -constValue->intValue;
     break;
   case TK_CHAR:
     eat(TK_CHAR);
@@ -409,24 +414,48 @@ void compileStatement(void) {
 }
 
 Type* compileLValue(void) {
-  // TODO: parse a lvalue (a variable, an array element, a parameter, the current function identifier)
   Object* var;
-  Type* varType;
+  Type* varType = NULL;
 
   eat(TK_IDENT);
-  // check if the identifier is a function identifier, or a variable identifier, or a parameter  
+  
+  // Kiểm tra identifier có phải lvalue hợp lệ không
   var = checkDeclaredLValueIdent(currentToken->string);
-  if (var->kind == OBJ_VARIABLE)
-    compileIndexes();
+  
+  // Xác định kiểu dựa trên loại object
+  if (var->kind == OBJ_VARIABLE) {
+    // Nếu là biến
+    if (var->varAttrs->type->typeClass == TP_ARRAY) {
+      // Nếu là mảng, compile indexes
+      varType = compileIndexes(var->varAttrs->type);
+    } else {
+      varType = var->varAttrs->type;
+    }
+  } else if (var->kind == OBJ_PARAMETER) {
+    // Nếu là tham số
+    varType = var->paramAttrs->type;
+  } else if (var->kind == OBJ_FUNCTION) {
+    // Nếu là hàm (gán giá trị trả về)
+    varType = var->funcAttrs->returnType;
+  }
 
   return varType;
 }
 
 void compileAssignSt(void) {
-  // TODO: parse the assignment and check type consistency
-  compileLValue();
+  Type* leftType;
+  Type* rightType;
+  
+  // Compile vế trái
+  leftType = compileLValue();
+  
   eat(SB_ASSIGN);
-  compileExpression();
+  
+  // Compile vế phải
+  rightType = compileExpression();
+  
+  // Kiểm tra tương đồng kiểu
+  checkTypeEquality(leftType, rightType);
 }
 
 void compileCallSt(void) {
@@ -468,39 +497,66 @@ void compileWhileSt(void) {
 }
 
 void compileForSt(void) {
-  // TODO: Check type consistency of FOR's variable
+  Object* loopVar;
+  Type* varType;
+  Type* startType;
+  Type* endType;
+  
   eat(KW_FOR);
   eat(TK_IDENT);
 
-  // check if the identifier is a variable
-  checkDeclaredVariable(currentToken->string);
+  // Lấy biến điều khiển vòng lặp
+  loopVar = checkDeclaredVariable(currentToken->string);
+  varType = loopVar->varAttrs->type;
 
   eat(SB_ASSIGN);
-  compileExpression();
+  
+  // Compile giá trị bắt đầu
+  startType = compileExpression();
+  // Kiểm tra kiểu giá trị bắt đầu khớp với biến
+  checkTypeEquality(varType, startType);
 
   eat(KW_TO);
-  compileExpression();
+  
+  // Compile giá trị kết thúc
+  endType = compileExpression();
+  // Kiểm tra kiểu giá trị kết thúc khớp với biến
+  checkTypeEquality(varType, endType);
 
   eat(KW_DO);
   compileStatement();
 }
 
+// ĐỂ BUỔI 2
 void compileArgument(Object* param) {
   // TODO: parse an argument, and check type consistency
   //       If the corresponding parameter is a reference, the argument must be a lvalue
   compileExpression();
 }
 
+// ĐỂ BUỔI 2
 void compileArguments(ObjectNode* paramList) {
   //TODO: parse a list of arguments, check the consistency of the arguments and the given parameters
+  ObjectNode* node = paramList;
+  
   switch (lookAhead->tokenType) {
   case SB_LPAR:
     eat(SB_LPAR);
-    compileArgument();
+    if (node != NULL) {
+      compileArgument(node->object);
+      node = node->next;
+    } else {
+      compileArgument(NULL);
+    }
 
     while (lookAhead->tokenType == SB_COMMA) {
       eat(SB_COMMA);
-      compileArgument();
+      if (node != NULL) {
+        compileArgument(node->object);
+        node = node->next;
+      } else {
+        compileArgument(NULL);
+      }
     }
     
     eat(SB_RPAR);
@@ -532,9 +588,15 @@ void compileArguments(ObjectNode* paramList) {
 }
 
 void compileCondition(void) {
-  // TODO: check the type consistency of LHS and RHS, check the basic type
-  compileExpression();
+  Type* leftType;
+  Type* rightType;
+  
+  // Compile biểu thức bên trái
+  leftType = compileExpression();
+  // Kiểm tra phải là kiểu cơ bản
+  checkBasicType(leftType);
 
+  // Compile toán tử so sánh
   switch (lookAhead->tokenType) {
   case SB_EQ:
     eat(SB_EQ);
@@ -558,25 +620,34 @@ void compileCondition(void) {
     error(ERR_INVALID_COMPARATOR, lookAhead->lineNo, lookAhead->colNo);
   }
 
-  compileExpression();
+  // Compile biểu thức bên phải
+  rightType = compileExpression();
+  
+  // Kiểm tra 2 vế có cùng kiểu
+  checkTypeEquality(leftType, rightType);
 }
 
 Type* compileExpression(void) {
-  Type* type;
-  //TODO check type of operands
+  Type* exprType;
+  
   switch (lookAhead->tokenType) {
   case SB_PLUS:
     eat(SB_PLUS);
-    type = compileExpression2();
+    exprType = compileExpression2();
+    // Biểu thức có dấu + phải là integer
+    checkIntType(exprType);
     break;
   case SB_MINUS:
     eat(SB_MINUS);
-    type = compileExpression2();
+    exprType = compileExpression2();
+    // Biểu thức có dấu - phải là integer
+    checkIntType(exprType);
     break;
   default:
-    type = compileExpression2();
+    exprType = compileExpression2();
   }
-  return type;
+  
+  return exprType;
 }
 
 Type* compileExpression2(void) {
@@ -697,20 +768,20 @@ Type* compileFactor(void) {
     case OBJ_CONSTANT:
       switch (obj->constAttrs->value->type) {
       case TP_INT:
-	type = intType;
-	break;
+        type = intType;
+        break;
       case TP_CHAR:
-	type = charType;
-	break;
+        type = charType;
+        break;
       default:
-	break;
+        break;
       }
       break;
     case OBJ_VARIABLE:
       if (obj->varAttrs->type->typeClass == TP_ARRAY)
-	type = compileIndexes(obj->varAttrs->type);
+        type = compileIndexes(obj->varAttrs->type);
       else 
-	type = obj->varAttrs->type;
+        type = obj->varAttrs->type;
       break;
     case OBJ_PARAMETER:
       type = obj->paramAttrs->type;
@@ -724,7 +795,7 @@ Type* compileFactor(void) {
       break;
     }
     break;
-    case SB_LPAR:
+  case SB_LPAR:
     eat(SB_LPAR);
     type = compileExpression();
     eat(SB_RPAR);
@@ -737,15 +808,29 @@ Type* compileFactor(void) {
 }
 
 Type* compileIndexes(Type* arrayType) {
-  Type* type;
-//TODO check type of indexes and elements
+  Type* indexType;
+  Type* currentType = arrayType;
+  
+  // Duyệt qua các chỉ số
   while (lookAhead->tokenType == SB_LSEL) {
     eat(SB_LSEL);
-    type = compileExpression();
-        arrayType = arrayType->elementType;
+    
+    // Compile expression cho index
+    indexType = compileExpression();
+    
+    // Kiểm tra index phải là integer
+    checkIntType(indexType);
+    
+    // Kiểm tra currentType phải là array
+    checkArrayType(currentType);
+    
+    // Chuyển sang kiểu phần tử
+    currentType = currentType->elementType;
+    
     eat(SB_RSEL);
   }
-  return arrayType;
+  
+  return currentType;
 }
 
 int compile(char *fileName) {
@@ -767,5 +852,4 @@ int compile(char *fileName) {
   free(lookAhead);
   closeInputStream();
   return IO_SUCCESS;
-
 }
