@@ -1,4 +1,4 @@
-PROGRAM  ERROR3;  (* Dựa trên EXAMPLE4 - Array *)
+PROGRAM  ERROR3;  (* Dựa trên EXAMPLE4 *)
 CONST MAX = 10;
 TYPE T = INTEGER;
 VAR  A : ARRAY(. 10 .) OF T;
@@ -50,4 +50,4 @@ BEGIN
        CALL WRITEI(SUM);
        CH := READC;
      END
-END.  (* ERROR33 *)
+END.  (* ERROR3 *)

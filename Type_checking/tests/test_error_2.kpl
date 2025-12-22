@@ -1,4 +1,4 @@
-PROGRAM  ERROR2;  (* Dựa trên EXAMPLE3 - TOWER OF HANOI *)
+PROGRAM  ERROR2;  (* Dựa trên EXAMPLE3 *)
 VAR  I:INTEGER;  
      N:INTEGER;  
      P:INTEGER;  
@@ -38,4 +38,4 @@ BEGIN
       CALL  HANOI(N,P,Q);  
       CALL  WRITELN  
     END
-END.  (* ERROR22 *)
+END.  (* ERROR2 *)

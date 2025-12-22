@@ -25,4 +25,4 @@ PROGRAM ERROR6; (* Dựa trên EXAMPLE6 *)
 
 BEGIN
      CALL P(C1);
-END. (* ERROR66 *)
+END. (* ERROR6 *)

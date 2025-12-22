@@ -1,4 +1,4 @@
-PROGRAM ERROR1; (* Dựa trên EXAMPLE2 - Factorial *)
+PROGRAM ERROR1; (* Dựa trên EXAMPLE2 *)
    CONST C1 = 'a';
          C2 = +C1;  (* LỖI: Dùng toán tử + với hằng CHAR *)
 
@@ -15,4 +15,4 @@ BEGIN
       CALL WRITELN;
       CALL WRITEI(F(N));
     END;
-END. (* ERROR11 *)
+END. (* ERROR1 *)

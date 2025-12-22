@@ -2,4 +2,4 @@ PROGRAM ERROR5; (* Dựa trên EXAMPLE1 *)
 VAR A : INTEGER;
 BEGIN
   A := 'Z';  (* LỖI: Gán CHAR cho biến INTEGER *)
-END. (* ERROR55 *)
+END. (* ERROR5 *)
