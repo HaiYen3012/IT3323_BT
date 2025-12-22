@@ -38,8 +38,8 @@ BEGIN
 END;
 
 BEGIN
-   CH := 'y'; (* LỖI: Gán giá trị kiểu CHAR cho biến kiểu INTEGER *)
-   WHILE CH = N DO
+   CH := 'y';
+   WHILE CH = N DO (* LỖI *)
      BEGIN
        CALL INPUT;
        CALL OUTPUT;
