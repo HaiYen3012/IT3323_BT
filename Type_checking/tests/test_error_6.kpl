@@ -1,28 +1,49 @@
-PROGRAM ERROR6; (* Dựa trên EXAMPLE6 *)
-   CONST C1 = 10;
-  	 C2 = 'a';
-   TYPE T1 = ARRAY(. 10 .) OF INTEGER;
-   VAR V1 : INTEGER;
-       V2 : ARRAY(. 10 .) OF T1;
+PROGRAM ERROR6; (* Dựa trên EXAMPLE4 *)
+CONST MAX = 10;
+TYPE T = INTEGER;
+VAR  A : ARRAY(. 10 .) OF T;
+     N : INTEGER;
+     CH : CHAR;
 
-   FUNCTION F(P1 : INTEGER; VAR P2 : CHAR) : INTEGER;
-     BEGIN
-       F := C1;
-     END;
+PROCEDURE INPUT;
+VAR I : INTEGER;
+    TMP : INTEGER;
+BEGIN
+  N := READI;
+  FOR I := 1 TO N DO
+     A(.I.) := READI;
+END;
 
-   PROCEDURE P(V1 : INTEGER);
-     CONST C1 = 'a';
-           C3 = 10;
-     TYPE T1 = INTEGER;
-          T2 = ARRAY(. 10 .) OF T1;
-     VAR V2 : T2;
-         V3 : CHAR;
+PROCEDURE OUTPUT;
+VAR I : INTEGER;
+BEGIN
+  FOR I := 1 TO N DO
      BEGIN
-	V3 := 'a';
-        IF V3 = C3 THEN  (* LỖI: So sánh CHAR với INTEGER *)
-          V1 := F(C3,V3);
-     END;
+       CALL WRITEI(A(.I.));
+       CALL WRITELN;
+     END
+END;
+
+FUNCTION SUM : INTEGER;
+VAR I: INTEGER;
+    S : INTEGER;
+BEGIN
+    S := 0;
+    I := 1;
+    WHILE I <= N DO
+     BEGIN
+       S := S + A(.I.);
+       I := I + 1;
+     END
+END;
 
 BEGIN
-     CALL P(C1);
+   CH := 'y';
+   WHILE CH = N DO
+     BEGIN
+       CALL INPUT;
+       CALL OUTPUT;
+       CALL WRITEI(SUM);
+       CH := READC;
+     END
 END. (* ERROR6 *)
