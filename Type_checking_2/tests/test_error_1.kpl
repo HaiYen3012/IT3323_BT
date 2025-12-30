@@ -1,0 +1,17 @@
+PROGRAM ERROR1;
+   
+VAR N : INTEGER;
+
+FUNCTION F(N : INTEGER) : INTEGER;
+  BEGIN
+    IF N = 0 THEN F := 1 ELSE F := N * F (N - 1);
+  END;
+
+BEGIN
+  FOR N := 1 TO 7 DO
+    BEGIN
+      CALL WRITELN;
+      CALL WRITEI(F(5));
+    END;
+  CALL WRITEI(READI(10));  (* LỖI: READI không có tham số nhưng gọi với 1 tham số *)
+END.

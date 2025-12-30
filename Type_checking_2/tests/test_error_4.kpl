@@ -1,0 +1,16 @@
+PROGRAM ERROR4;
+   
+VAR N : INTEGER;
+
+FUNCTION F(N : INTEGER) : INTEGER;
+  BEGIN
+    IF N = 0 THEN F := 1 ELSE F := N * F (N - 1);
+  END;
+
+BEGIN
+  FOR N := 1 TO 7 DO
+    BEGIN
+      CALL WRITELN;
+      CALL WRITEI(F(5, 10));  (* LỖI: F cần 1 tham số nhưng truyền 2 *)
+    END;
+END.
